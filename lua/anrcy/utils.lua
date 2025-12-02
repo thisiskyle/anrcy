@@ -1,21 +1,27 @@
 local M = {}
 
+
 function M.insert_template()
     local template = [[
-
-{ 
-    name = "", 
+{
+    name = "",
     type = "",
     url = "",
     headers = { },
-    data = { },
     additional_args = { },
-    show_cmd = false
-    after = nil,
-    test = nil,
-},
-
-        ]]
+    show_cmd = false,
+    data = {
+        urlencode = {},
+        standard = {},
+        raw = {},
+        binary = {},
+        lua = {},
+        form = {},
+    },
+    after = function() end,
+    test = function() end,
+}
+    ]]
 
     vim.fn.setreg('m', template)
     vim.api.nvim_feedkeys('"mpjjf"', 'n', true)

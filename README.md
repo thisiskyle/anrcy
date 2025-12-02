@@ -1,13 +1,32 @@
-# Sleepy - REST API Client
+# Anrcy - Another Neovim Rest Client... Yo
 
 ## About
 
-Another REST API client. I found similar plugins had more features than I needed. 
-So feature wise, Sleepy is pretty minimal.
+Another REST client plugin for Neovim that nobody asked for.
 
-If you are looking for something more feature complete check out the awesome plugin [kulala.nvim](kulala).
+Essentially just a plugin for turning lua tables into curl commands.
+Feature wise, Anrcy is pretty minimal and it is probably a bit clunky. Not all curl
+features and flags are properly implemented but it suits my needs.
 
 <br>
+
+## But why?
+
+This plugin was developed for personal use and not necessarily to fix a problem that
+hasn't been fixed already. There are plenty of better plugins out there. 
+For me, the other plugins were overkill and I felt that this would be a fun challenge.
+
+When creating this I had a few goals in mind: 
+
+- lua object structure that is easy to use in neovim
+- quickly and easily "sketch" out a request anywhere
+- easily create tests that run against the response data
+- display the response and test results in a buffer
+
+
+<br>
+<br>
+
 
 ## Installation
 
@@ -15,59 +34,65 @@ Lazy:
 
 ```lua
 {
-    "thisiskyle/sleepy-nvim",
+    "thisiskyle/anrcy",
     opts = {},
 }
 ```
 
+
 <br>
+<br>
+
 
 ## Configuration
 
 ```lua
 opts = {
-
     -- (optional) this function will be run after the response data is added to the new buffer useful for formatting the response
-    -- NOTE: this will be overidden by sleepy.Job.after if one is set
+    -- NOTE: this will be overidden by anrcy.Job.after if one is set
     --@type fun()?
     global_after = function() end,
-
 },
 ```
 
+
 <br>
+<br>
+
 
 ## Usage
 
-Sleepy uses lua tables to build curl commands to make https requests. 
-To tell sleepy what tables to use you visually select the table, or multiple tables, and run `:Sleepy` 
+Anrcy uses lua tables to build curl commands. 
+You use neovim to visually select the table(s) and run `:Anrcy` 
 
-The response data, test results, and anything else returned from the http call with be shown in its own buffer.
+The response data, test results, and anything else returned from the http call will 
+be displayed in its own buffer.
 
-Selected text is wrapped in an array internally. So to run multiple jobs
-they should be separated by a comma, but do not need to be wrapped in curly
-brackets. 
+<i>NOTE: Selected text is wrapped in an array internally. So to run multiple jobs
+they should be separated by a comma.<i>
 
-
+<br>
+<br>
 
 ### Commands 
 
 |Command|Description|
 |-------|-----------|
-|Sleepy|Run the currently selected jobs|
-|SleepyRepeat|Repeat the last job that was run|
-|SleepyBookmark|Save the current visually selected jobs|
-|SleepyBookmarkRun|Run the currently bookmarked jobs|
-|SleepyShowCurl|Display the curl commands created by the current visually selected jobs (does not run anything)|
-|SleepyTemplate|Insert a job template at the cursor location|
-|SleepyClear|Clear any currently running and cached jobs|
+|Anrcy|Run the currently selected jobs|
+|AnrcyRepeat|Repeat the last job that was run|
+|AnrcyBookmark|Save the current visually selected jobs|
+|AnrcyBookmarkRun|Run the currently bookmarked jobs|
+|AnrcyShowCurl|Display the curl commands created by the current visually selected jobs (does not run anything)|
+|AnrcyTemplate|Insert a job template at the cursor location|
+|AnrcyClear|Clear any currently running and cached jobs|
 
+<br>
+<br>
 
 ### Job Template
 
 ```lua
-
----@type sleepy.Job
+---@type anrcy.Job
 { 
     --- (optional) name of the job, will be used to name the response buffer
     ---@type string
@@ -91,32 +116,30 @@ brackets.
     headers = { },
 
     --- (optional) request body / url params
-    ---@type sleepy.RequestData[]
+    ---@type anrcy.RequestData[]
     data = {
 
-        --- (optional) add '--data-urlencode' prefix before the data
-        ---@type sleepy.RequestData
-        { urlencode = "" }, 
+        --- (optional) in the curl command, add '--data-urlencode' prefix before each data string in the list
+        ---@type string[]
+        urlencode = { }, 
 
-        --- (optional) add '--data-raw' prefix before the data
-        ---@type sleepy.RequestData
-        { raw = "" },
+        --- (optional) in the curl command, add '--data-raw' prefix before the data
+        ---@type string
+        raw = "", 
 
-        --- (optional) encodes the table as json and will add '--data' prefix before the data
-        ---@type sleepy.RequestData
-        { json_encode = { } },
+        --- (optional) encodes the lua table as json and will add '--data' prefix before 
+        --- the data in the curl command
+        ---@type table
+        lua = { },
 
-        --- (optional) use the data type and request type to decide which prefix to use 
-        --- on a GET request, this will be sent as '--data-urlencoded'
-        --- on a POST request, this will be treated as standard '--data'
-        ---@type sleepy.RequestData
-        { "" },
+        --- (optional) in the curl command, add '--data' prefix before the string 
+        ---@type string
+        standard = "",
 
-        --- (optional) use the data type and request type to decide which prefix to use 
-        --- on a GET request, this table be ignored
-        --- on a POST request, this table will be encoded as json and sent as '--data'
-        ---@type sleepy.RequestData
-        { { } },
+        --- (optional) in the curl command, add '--data-binary' prefix before the string 
+        ---@type string
+        binary = "",
+
     },
 
     --- (optional) array of additional curl arguments as strings
@@ -124,31 +147,33 @@ brackets.
     additional_args = { },
 
     --- (optional) runs after the response is loaded into the buffer, used for formatting
-    ---@type fun(data: sleepy.ResponseData)
+    ---@type fun(data: anrcy.ResponseData)
     after = nil,
 
     --- (optional) runs last, runs tests against the reponse data
-    ---@type fun(data: sleepy.ResponseData): sleepy.TestResult[]
+    ---@type fun(data: anrcy.ResponseData): anrcy.TestResult[]
     test = nil,
 },
-
 ```
+
+<br>
+<br>
 
 ### Examples
 
-
-#### GET Requests:
-
 ```lua
-
 -- basic GET request
 { 
     name = "pikachu", 
     type = "GET", 
     url = "https://pokeapi.co/api/v2/pokemon/pikachu", 
 }, -- this comma is important for selecting multiple jobs
+```
 
+<br>
+<br>
 
+```lua
 -- more complex GET request with headers, additional args, formatting and test functions
 { 
     name = "ditto", 
@@ -161,11 +186,13 @@ brackets.
         "-i"
     },
     after = function(data) 
-        vim.cmd(":%!jq") -- format the json response, requires jq
+        -- example for using jq to format the json response
+        vim.cmd(":%!jq")
     end,
     test = function(data) 
-        -- import sleepy.assert for some test helper functions
-        local assert = require("sleepy.assert")
+        -- import anrcy.assert for some test helper functions
+        local assert = require("anrcy.assert")
+
         return {
             {
                 -- assumes response data is json, follows a path and checks the key's value
@@ -183,7 +210,7 @@ brackets.
                 result = assert.data_contains(data, 'name.*ditto') 
             },
             { 
-                -- you can use your own function if assert does fit your needs
+                -- you can use your own function if assert does not fit your needs
                 name = "always true",
                 result = (function()
                     -- test here....
@@ -193,69 +220,33 @@ brackets.
         }
     end
 }, --- this comma is important when selecting multiple jobs
+```
 
+<br>
+<br>
 
--- GET request with 
+```lua
 { 
-    name = "another get example",
+    name = "get example",
     type = "GET", 
     url = "https://mockapi.com/api",
     headers = {
         "apikey:12345" 
     },
     data = {
-        -- will be prefixed with --data-urlencode in curl command
-        { urlencode = "lean=1" }, 
-
-        -- in a GET request, unlabeled string will be prefixed with --data-urlencode in curl command
-        { "param1=\"something\"" }, 
-
-        -- in a GET request, a table will be ignored
-        { 
-            json_encode = {
-                Name = "table in a GET request",
-                Description = "this will be ignored",
-                Variables = {
-                    { Name = "One", Value = 1 }
-                    { Name = "Two", Value = 2 }
-                    { Name = "Three", Value = 3 }
-                }
-            }
-        },
+        -- will be prefixed with '--data-urlencode' in curl command
+        urlencode = {
+            "lean=1",
+            "param1=\"something\"" 
+        }, 
     },
-},
-
+}, --- this comma is important when selecting multiple jobs
 ```
 
-
-#### POST Requests
+<br>
+<br>
 
 ```lua
-
-{ 
-    name = "post example",
-    type = "POST", 
-    url = "http://localhost:8080",
-    headers = {
-        "Content-Type: application/json"
-    },
-    data = {
-        {
-            -- a lua table will be json encoded and prefixed by --data in the curl command
-            json_encode = {
-                Name = "lua table",
-                Description = "this will be converted to json",
-                Variables = {
-                    { Name = "One", Value = 1 }
-                    { Name = "Two", Value = 2 }
-                    { Name = "Three", Value = 3 }
-                }
-            }
-        },
-    },
-},
-
-
 { 
     name = "another post example",
     type = "POST", 
@@ -264,19 +255,22 @@ brackets.
         "Content-Type: application/json"
     },
     data = {
-        -- in a POST request, unlabled strings will be prefixed by --data in the curl command
-        { 
-            [[
+        -- prefixed by '--data' in the curl command
+        standard = [[
 {
     "Name": "lua multiline json string",
     "Description": "multiline strings work too",
     "Note": "indentation will be included, thats why the wierd formatting"
 }
-            ]]
-        },
+        ]]
     },
-},
+}, --- this comma is important when selecting multiple jobs
+```
 
+<br>
+<br>
+
+```lua
 { 
     name = "post example",
     type = "POST", 
@@ -285,24 +279,17 @@ brackets.
         "Content-Type: application/json"
     },
     data = {
-        {
-            -- lua table will be json encoded and prefixed by --data in the curl command
-            {
-                Name = "lua table",
-                Description = "this will be converted to json",
-                Variables = {
-                    { Name = "One", Value = 1 }
-                    { Name = "Two", Value = 2 }
-                    { Name = "Three", Value = 3 }
-                }
+        -- lua table will be json encoded and prefixed by '--data' in the curl command
+        lua = {
+            Name = "lua table example",
+            Description = "this will be converted to json",
+            Variables = {
+                { Name = "One", Value = 1 },
+                { Name = "Two", Value = 2 },
+                { Name = "Three", Value = 3 },
             }
-        },
+        }
     },
-},
-
+}, --- this comma is important when selecting multiple jobs
 ```
-
-
-
-[kulala]:  <https://github.com/mistweaverco/kulala.nvim>
 

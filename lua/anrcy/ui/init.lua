@@ -1,4 +1,4 @@
-local utils = require("sleepy.utils")
+local utils = require("anrcy.utils")
 
 
 local M = {}
@@ -85,7 +85,7 @@ end
 
 --- Displays each Response in a new buffer
 --- and runs the after() function if there is one
----@param responses sleepy.Response[]
+---@param responses anrcy.Response[]
 ---
 function M.show(responses)
     for _,r in pairs(responses) do
@@ -125,28 +125,28 @@ end
 ---@param level string
 ---
 function M.notify(message, level)
-    vim.notify(message, level, { title = "Sleepy", })
+    vim.notify(message, level, { title = "", })
 end
 
 --- Displays a notification of the current job progress
 ---@param target number
 ---@param completed number
 ---
-function M.show_progress(target, completed)
+function M.show_progress(target, completed, animation)
 
-    local animator = require("sleepy.ui.animator")
-    local spinner = ""
-    local message =  completed .. "/" .. target
+    local animator = require("anrcy.ui.animator")
+    local spinner = animator.get_frame(animator.animations[animation])
+    local message =  completed .. "/" .. target .. "  " .. spinner
 
-    if(completed < target) then
-        spinner = animator.get_frame(animator.animations["default"])
+    if(completed == target) then
+        message = "Complete!"
     end
 
     vim.notify(message, "info", {
-        id = "sleepy_progress",
-        title = "Sleepy",
+        id = "anrcy_progress",
+        title = "ANRCY",
         opts = function(notif)
-            notif.icon = spinner
+            notif.icon = ""
         end
     })
 
@@ -161,8 +161,8 @@ function M.animation_test(count)
         return
     end
 
-    ---@type sleepy.Animator
-    local animator = require("sleepy.ui.animator")
+    ---@type anrcy.Animator
+    local animator = require("anrcy.ui.animator")
     local message = ""
 
     for k,v in pairs(animator.animations) do
@@ -170,12 +170,15 @@ function M.animation_test(count)
     end
 
     vim.notify(message, "info", {
-        id = "sleepy_animate",
-        title = "Sleepy Animations",
+        id = "anrcy_animate",
+        title = "Testing ANRCY Animations",
+        opts = function(notif)
+            notif.icon = ""
+        end
     })
 
     count = count - 1
-    vim.defer_fn(function() M.test_animations(count) end, 50)
+    vim.defer_fn(function() M.animation_test(count) end, 50)
 end
 
 
@@ -188,7 +191,7 @@ function M.progress_test(count)
     end
     local t = math.floor(500 / 100) - 1
     local c = math.floor((500 - count) / 100)
-    M.show_progress(t, c)
+    M.show_progress(t, c, "default")
     count = count - 1
     vim.defer_fn(function() M.progress_test(count) end, 50)
 end

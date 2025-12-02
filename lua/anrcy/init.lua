@@ -1,8 +1,8 @@
 
-require("sleepy.commands")
-local config = require("sleepy.config")
+require("anrcy.commands")
+local config = require("anrcy.config")
 
----@class sleepy
+---@class anrcy
 local M = {}
 
 
@@ -14,7 +14,7 @@ end
 
 
 --- Entry point function for running jobs from a provided list
----@param jobs? sleepy.Job[]
+---@param jobs? anrcy.Job[]
 ---
 function M.run_jobs(jobs)
     if(jobs == nil) then
@@ -22,9 +22,9 @@ function M.run_jobs(jobs)
         return
     end
 
-    require("sleepy.history_manager").archive(jobs)
-    require("sleepy.job_handler").async(jobs, function(responses)
-        require("sleepy.ui").show(responses)
+    require("anrcy.history_manager").archive(jobs)
+    require("anrcy.job_handler").async(jobs, function(responses)
+        require("anrcy.ui").show(responses)
     end)
 end
 

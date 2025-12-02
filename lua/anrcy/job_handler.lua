@@ -1,8 +1,8 @@
----@class sleepy.ResponseData
+---@class anrcy.ResponseData
 ---@field payload string[]
 ---@field curl_header string[]
 
----@class sleepy.Job simplified job data used for creating the actual request job
+---@class anrcy.Job simplified job data used for creating the actual request job
 ---@field name string
 ---@field show_cmd? string
 ---@field type string
@@ -14,9 +14,9 @@
 ---@field after? fun(data?: string[])
 ---@field test? fun(data?: string[])
 
----@class sleepy.Response
+---@class anrcy.Response
 ---@field name? string
----@field data? sleepy.ResponseData
+---@field data? anrcy.ResponseData
 ---@field error? string[]
 ---@field after? fun(data?: string[])
 ---@field test? fun(data?: string[])
@@ -24,14 +24,15 @@
 ---@field cmd? string[]
 ---@field show_cmd? boolean
 
----@class sleepy.TestResult 
+---@class anrcy.TestResult 
 ---@field name string
 ---@field result boolean
 
 
-local utils = require("sleepy.utils")
-local ui = require("sleepy.ui")
-local curl = require("sleepy.curl")
+local config = require("anrcy.config")
+local utils = require("anrcy.utils")
+local ui = require("anrcy.ui")
+local curl = require("anrcy.curl")
 local active_jobs = {}
 local completed_jobs = {}
 local inprogress_jobs = {}
@@ -59,7 +60,7 @@ local function monitor_progress()
         done = done + 1
     end
 
-    ui.show_progress(run + done, done)
+    ui.show_progress(run + done, done, config.options.animation)
 
     if(run == 0) then
         clear_jobs()
@@ -70,13 +71,13 @@ local function monitor_progress()
 end
 
 
----@class sleepy.Job_Handler
+---@class anrcy.Job_Handler
 local M = {}
 
 --- Uses vim.fn.system and curl to make a syncronous http request
 --- I am not sure if I will ever actually use this
----@param jobs sleepy.Job[]
----@return sleepy.Response[]
+---@param jobs anrcy.Job[]
+---@return anrcy.Response[]
 ---
 function M.sync(jobs)
     local responses = {}
@@ -99,7 +100,7 @@ function M.sync(jobs)
         end
 
         table.insert(responses, {
-            name = j.name or "sleepy",
+            name = j.name or "anrcy",
             data = { vim.fn.system(cmd) },
             after = j.after or nil,
             test = j.test or nil
@@ -112,12 +113,10 @@ end
 
 
 --- Uses vim.fn.jobstart and curl to make an asyncronous http request
----@param jobs sleepy.Job[]
----@param on_complete fun(data?: sleepy.Response[]) on_complete callback handler
+---@param jobs anrcy.Job[]
+---@param on_complete fun(data?: anrcy.Response[]) on_complete callback handler
 ---
 function M.async(jobs, on_complete)
-
-    local config = require("sleepy.config")
 
     for _,j in ipairs(jobs) do
 
@@ -171,7 +170,7 @@ function M.async(jobs, on_complete)
         )
 
         active_jobs[job_id] = {
-            name = j.name or "sleepy",
+            name = j.name or "anrcy",
             show_cmd = j.show_cmd,
             cmd = cmd,
             data = nil,
@@ -210,12 +209,12 @@ function M.show_commands(jobs)
             table.insert(lines, j.command)
         else
             local cmd = curl.build(request)
-            local cmdStr = require("sleepy.utils").get_curl_string(cmd)
+            local cmdStr = require("anrcy.utils").get_curl_string(cmd)
             table.insert(lines, cmdStr)
         end
     end
 
-    require("sleepy.ui").show_commands(lines)
+    require("anrcy.ui").show_commands(lines)
 end
 
 

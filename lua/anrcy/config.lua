@@ -1,17 +1,20 @@
 
----@class sleepy.Config
+---@class anrcy.Config
 ---@field global_after? fun(data: string[])
+---@field animation? string
 
 local M = {}
 
----@type sleepy.Config
-M.defaults = { }
+---@type anrcy.Config
+M.defaults = {
+    animation = "default"
+}
 
----@type sleepy.Config
+---@type anrcy.Config
 M.options = M.defaults
 
 --- Merge custom config with default config
----@param opts sleepy.Config -- custom config
+---@param opts anrcy.Config -- custom config
 ---
 function M.setup(opts)
     M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})

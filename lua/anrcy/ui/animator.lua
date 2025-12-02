@@ -1,36 +1,36 @@
----@class sleepy.Animation
+---@class anrcy.Animation
 ---@field delta_time_ms number
 ---@field frames string[]
 
----@class sleepy.Animator
----@field animations sleepy.Animation[]
----@field get_frame fun(animation: sleepy.Animation): string
+---@class anrcy.Animator
+---@field animations anrcy.Animation[]
+---@field get_frame fun(animation: anrcy.Animation): string
 ---
 local M = {}
 
 M.animations = {
-    ---@type sleepy.Animation
+    ---@type anrcy.Animation
     none = {
         delta_time_ms = 600,
         frames = { "" }
     },
 
-    ---@type sleepy.Animation
+    ---@type anrcy.Animation
     default = {
         delta_time_ms = 600,
         frames = {
-            "zzz",
-            "Zzz",
-            "ZZz",
-            "ZZZ",
-            "zZZ",
-            "zzZ",
+            "ᓚᘏᗢ zzz",
+            "ᓚᘏᗢ Zzz",
+            "ᓚᘏᗢ ZZz",
+            "ᓚᘏᗢ ZZZ",
+            "ᓚᘏᗢ zZZ",
+            "ᓚᘏᗢ zzZ",
         }
     },
 }
 
 
----@param animation? sleepy.Animation
+---@param animation? anrcy.Animation
 ---@return string -- the frame to be displayed
 ---
 function M.get_frame(animation)
