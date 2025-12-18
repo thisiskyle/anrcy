@@ -12,8 +12,8 @@ features and flags are properly implemented but it suits my needs.
 
 ## But why?
 
-This plugin was developed for personal use and not necessarily to fix a problem that
-hasn't been fixed already. There are plenty of better plugins out there. 
+This plugin was developed for personal use, not to fix a problem that
+hasn't been fixed already. There are plenty of other, more complete plugins out there. 
 For me, the other plugins were overkill and I felt that this would be a fun challenge.
 
 When creating this I had a few goals in mind: 
@@ -98,12 +98,7 @@ they should be separated by a comma.<i>
     ---@type string
     name = "", 
 
-    --- (optional) show the curl command that is created from this job
-    --- in the results buffer
-    ---@type boolean
-    show_cmd = false, 
-
-    --- (required) request type  [ "GET", "POST" ]
+    --- (required) request type  [ "GET", "POST", etc ]
     ---@type string
     type = "",
 
@@ -114,6 +109,11 @@ they should be separated by a comma.<i>
     --- (optional) array of header strings
     ---@type string[]
     headers = { },
+
+    --- (optional) show the curl command that is created from this job
+    --- in the results buffer
+    ---@type boolean
+    show_cmd = false, 
 
     --- (optional) request body / url params
     ---@type anrcy.RequestData[]
@@ -324,4 +324,3 @@ they should be separated by a comma.<i>
 
 <br>
 <br>
-

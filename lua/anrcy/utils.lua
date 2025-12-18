@@ -2,8 +2,7 @@ local M = {}
 
 
 function M.insert_template()
-    local template = [[
-{
+    local template = [[{
     name = "",
     type = "",
     url = "",
@@ -21,7 +20,7 @@ function M.insert_template()
     after = function() end,
     test = function() end,
 }
-    ]]
+]]
 
     vim.fn.setreg('m', template)
     vim.api.nvim_feedkeys('"mpjjf"', 'n', true)
