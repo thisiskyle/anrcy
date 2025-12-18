@@ -61,10 +61,16 @@ end
 
 --- Creates a buffer
 ---@param name string
+---@param vertical_split boolean
 ---
-local function create(name)
+local function create(name, vertical_split)
     local n = name:gsub(" ", "_")
-    vim.cmd(":new")
+    if(vertical_split) then
+        vim.cmd(":vnew")
+        vim.cmd(":wincmd L")
+    else
+        vim.cmd(":new")
+    end
     vim.cmd(":file " .. find_buf_name(n .. "_", 1))
     vim.cmd(":set fileformat=unix")
     vim.opt_local.buftype = "nofile"
@@ -78,7 +84,7 @@ end
 ---@param cmds string[]
 ---
 function M.show_commands(cmds)
-    local bufn = create("curl commands")
+    local bufn = create("curl commands", true)
     write(bufn, utils.remove_line_endings(cmds))
 end
 
@@ -88,14 +94,19 @@ end
 ---@param responses anrcy.Response[]
 ---
 function M.show(responses)
+    local i = 0;
+
     for _,r in pairs(responses) do
 
-        if(r.error) then
-            local bufn = create(r.name .. "_error")
-            write(bufn, r.error)
+        local vertical_split = (i == 0)
 
+        if(r.error) then
+            local bufn = create(r.name .. "_error", vertical_split)
+            write(bufn, r.error)
         else
-            local bufn = create(r.name)
+
+            local bufn = create(r.name, vertical_split)
+
             write(bufn, r.data.payload)
             if(r.after) then
                 r.after(r.data)
@@ -117,6 +128,7 @@ function M.show(responses)
             vim.cmd(":norm gg")
         end
 
+        i = i + 1
     end
 end
 
