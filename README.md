@@ -121,30 +121,30 @@ they should be separated by a comma.<i>
 
         --- (optional) in the curl command, add '--data-urlencode' prefix before each data string in the list
         ---@type string[]
-        urlencode = { }, 
+        urlencode = {}, 
 
         --- (optional) in the curl command, add '--data-raw' prefix before the data
-        ---@type string
-        raw = "", 
+        ---@type string[]
+        raw = {}, 
 
         --- (optional) encodes the lua table as json and will add '--data' prefix before 
         --- the data in the curl command
         ---@type table
-        lua = { },
+        lua = {},
 
         --- (optional) in the curl command, add '--data' prefix before the string 
         ---@type string
-        standard = "",
+        standard = {},
 
         --- (optional) in the curl command, add '--data-binary' prefix before the string 
         ---@type string
-        binary = "",
+        binary = {},
 
     },
 
     --- (optional) array of additional curl arguments as strings
     ---@type string[]
-    additional_args = { },
+    additional_args = {},
 
     --- (optional) runs after the response is loaded into the buffer, used for formatting
     ---@type fun(data: anrcy.ResponseData)
@@ -162,7 +162,8 @@ they should be separated by a comma.<i>
 ### Examples
 
 ```lua
--- basic GET request
+-- generated curl: 
+-- curl -s -X GET --get https://pokeapi.co/api/v2/pokemon/pikachu
 { 
     name = "pikachu", 
     type = "GET", 
@@ -174,6 +175,9 @@ they should be separated by a comma.<i>
 <br>
 
 ```lua
+-- generated curl: 
+-- curl -s -i -X GET --get --header "apikey:1234567890" https://pokeapi.co/api/v2/pokemon/ditto
+
 -- more complex GET request with headers, additional args, formatting and test functions
 { 
     name = "ditto", 
@@ -226,6 +230,8 @@ they should be separated by a comma.<i>
 <br>
 
 ```lua
+-- generated curl: 
+-- curl -s -X GET --get --header "apikey:12345" --data-urlencode "lean=1" --data-urlencode "param1=\"something\"" https://mockapi.com/api
 { 
     name = "get example",
     type = "GET", 
@@ -247,6 +253,8 @@ they should be separated by a comma.<i>
 <br>
 
 ```lua
+-- generated curl: 
+-- curl -s -X POST --header "Content-Type: application/json" --data "{ \"Name\": \"lua multiline json string\", \"Description\": \"multiline strings work too\", } " http://localhost:8080
 { 
     name = "another post example",
     type = "POST", 
@@ -256,13 +264,14 @@ they should be separated by a comma.<i>
     },
     data = {
         -- prefixed by '--data' in the curl command
-        standard = [[
+        standard = {
+[[
 {
     "Name": "lua multiline json string",
     "Description": "multiline strings work too",
-    "Note": "indentation will be included, thats why the wierd formatting"
 }
-        ]]
+]]
+        }
     },
 }, --- this comma is important when selecting multiple jobs
 ```
@@ -271,6 +280,8 @@ they should be separated by a comma.<i>
 <br>
 
 ```lua
+-- generated curl: 
+-- curl -s -X POST --header "Content-Type: application/json" --data "{\"Name\":\"lua table example\",\"Description\":\"this will be converted to json\"}" http://localhost:8080
 { 
     name = "post example",
     type = "POST", 
@@ -283,13 +294,34 @@ they should be separated by a comma.<i>
         lua = {
             Name = "lua table example",
             Description = "this will be converted to json",
-            Variables = {
-                { Name = "One", Value = 1 },
-                { Name = "Two", Value = 2 },
-                { Name = "Three", Value = 3 },
-            }
         }
     },
 }, --- this comma is important when selecting multiple jobs
 ```
+
+<br>
+<br>
+
+```lua
+-- generated curl:
+-- curl -s -X POST --header "Content-Type: application/x-www-form-urlencoded" --data "name=anrcy" --data "age=30" http://localhost:8080
+{ 
+    name = "another post example",
+    type = "POST", 
+    url = "http://localhost:8080",
+    headers = {
+        "Content-Type: application/x-www-form-urlencoded"
+    },
+    data = {
+        -- prefixed by '--data' in the curl command
+        standard = {
+            "name=anrcy",
+            "age=30"
+        }
+    },
+}, --- this comma is important when selecting multiple jobs
+```
+
+<br>
+<br>
 

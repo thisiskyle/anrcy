@@ -1,9 +1,9 @@
 ---@class anrcy.RequestData
 ---@field urlencode? string[]
----@field raw? string
+---@field raw? string[]
 ---@field lua? table
----@field standard? string
----@field binary? string
+---@field standard? string[]
+---@field binary? string[]
 ---@field form? string[]
 
 ---@class anrcy.HttpRequest table with the data needed to make an http request
@@ -42,7 +42,7 @@ end
 function M.build(request)
 
     local curl_command = {}
-    local type = string.lower(request.type)
+    local request_type = string.lower(request.type)
 
     table.insert(curl_command, "curl")
     table.insert(curl_command, "-s")
@@ -53,7 +53,7 @@ function M.build(request)
         end
     end
 
-    for _,v in ipairs(request_types[type]) do
+    for _,v in ipairs(request_types[request_type]) do
         table.insert(curl_command, v)
     end
 
@@ -73,21 +73,27 @@ function M.build(request)
         end
 
         if(request.data.raw) then
-            insert_with_prefix(curl_command, request.data.raw, "--data-raw")
+            for _,v in ipairs(request.data.raw) do
+                insert_with_prefix(curl_command, v, "--data-raw")
+            end
         end
 
         if(request.data.lua) then
-            if(type(request.data.lua) == "table") then
+            if(_G.type(request.data.lua) == "table") then
                 insert_with_prefix(curl_command, vim.json.encode(request.data.lua), "--data")
             end
         end
 
         if(request.data.standard) then
-            insert_with_prefix(curl_command, request.data.standard, "--data")
+            for _,v in ipairs(request.data.standard) do
+                insert_with_prefix(curl_command, v, "--data")
+            end
         end
 
         if(request.data.binary) then
-            insert_with_prefix(curl_command, request.data.binary, "--data-binary")
+            for _,v in ipairs(request.data.binary) do
+                insert_with_prefix(curl_command, v, "--data-binary")
+            end
         end
 
         if(request.data.form) then
