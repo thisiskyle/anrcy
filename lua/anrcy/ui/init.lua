@@ -10,8 +10,12 @@ local M = {}
 ---
 local function format_test_results(results)
     local content = {}
+    table.insert(content, "Tests")
+    table.insert(content, "------------")
+
     for _,v in pairs(results) do
-        table.insert(content, "Test: " .. v.name .. " [" .. tostring(v.result) .. "]")
+        local result = (v.result) and "pass" or "fail"
+        table.insert(content, "[" .. result .. "] " .. v.name)
     end
     table.insert(content, "")
     return content
