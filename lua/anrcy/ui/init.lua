@@ -10,14 +10,10 @@ local M = {}
 ---
 local function format_test_results(results)
     local content = {}
-    table.insert(content, "Tests")
-    table.insert(content, "------------")
-
     for _,v in pairs(results) do
         local result = (v.result) and "pass" or "fail"
         table.insert(content, "[" .. result .. "] " .. v.name)
     end
-    table.insert(content, "")
     return content
 end
 
@@ -116,17 +112,22 @@ function M.show(responses)
                 r.after(r.data)
             end
 
-            if(r.data.curl_header) then
-                insert_at_top(bufn, r.data.curl_header)
-            end
+            local next = next
 
-            if(r.test_results) then
-                insert_at_top(bufn, format_test_results(r.test_results))
+            if(next(r.data.curl_header)) then
+                insert_at_top(bufn, { " ", " " })
+                insert_at_top(bufn, r.data.curl_header)
             end
 
             if(r.show_cmd) then
                 local cmd = utils.get_curl_string(r.cmd)
-                insert_at_top(bufn, { cmd, " " })
+                insert_at_top(bufn, { " ", " " })
+                insert_at_top(bufn, { cmd })
+            end
+
+            if(r.test_results) then
+                insert_at_top(bufn, { " ", " " })
+                insert_at_top(bufn, format_test_results(r.test_results))
             end
 
             vim.cmd(":norm gg")
