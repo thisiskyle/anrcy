@@ -7,6 +7,36 @@ local history = {}
 local bookmark = nil
 
 
+
+local function setup_keymaps(bufn)
+    vim.keymap.set(
+        'n',
+        '<cr>',
+        function()
+            local lineNum = vim.api.nvim_win_get_cursor(0)[1]
+            require("anrcy").run_jobs(M.get(lineNum))
+            require("anrcy.ui").close_history()
+        end,
+        {
+            buffer = bufn,
+            desc = 'anrcy: run from history'
+        }
+    )
+
+    vim.keymap.set(
+        'n',
+        'q',
+        function()
+            require("anrcy.ui").close_history()
+        end,
+        {
+            buffer = bufn,
+            desc = 'anrcy: close history'
+        }
+    )
+end
+
+
 function M.get_all()
     return history
 end
@@ -37,21 +67,11 @@ function M.get_bookmark()
 end
 
 
-function M.setup_keymaps()
-    vim.keymap.set(
-        'n',
-        '<cr>',
-        function()
-            local lineNum = vim.api.nvim_win_get_cursor(0)[1]
-            require("anrcy").run_jobs(M.get(lineNum))
-            require("anrcy.ui").show_history(history)
-        end,
-        {
-            buffer = true,
-            desc = 'anrcy: run from history'
-        }
-    )
+function M.show()
+    local bufn = require("anrcy.ui").show_history(history)
+    setup_keymaps(bufn)
 end
+
 
 
 return M

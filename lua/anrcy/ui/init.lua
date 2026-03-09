@@ -2,6 +2,8 @@ local utils = require("anrcy.utils")
 
 
 local M = {}
+local history_buf_name = "anrcy_history"
+
 
 
 --- Formats the test results into a string[] for buffer insertion
@@ -17,6 +19,31 @@ local function format_test_results(results)
     return content
 end
 
+--- Calculate the values to center and size a floating window
+---
+local function calc_float_window()
+    local editor = vim.api.nvim_list_uis()[1]
+
+    local w = math.floor(editor.width * 0.5)
+    local h = math.floor(editor.height * 0.5)
+
+    return {
+        w = w,
+        h = h,
+        x = ((editor.width - w) / 2),
+        y = ((editor.height - h) / 2)
+    }
+end
+
+
+local function apply_basic_buf_settings(bufn)
+    vim.api.nvim_set_option_value("fileformat", "unix", { buf = bufn })
+    vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufn })
+    vim.api.nvim_set_option_value("filetype", "text", { buf = bufn })
+    vim.api.nvim_set_option_value("swapfile", false, { buf = bufn })
+    vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufn })
+end
+
 
 --- starts at given id and finds and increments until it finds 
 --- an available base + id for a buffer
@@ -30,6 +57,8 @@ local function find_buf_name(base, id)
         return name
     else
         if(vim.fn.bufloaded(name) == 0) then
+            local bufn = vim.fn.bufnr(name)
+            vim.api.nvim_buf_delete(bufn, { force = true })
             return name
         end
     end
@@ -59,46 +88,47 @@ local function insert_at_top(bufn, data)
 end
 
 
-local function apply_buffer_settings()
-    vim.cmd(":set fileformat=unix")
-    vim.opt_local.buftype = "nofile"
-    vim.opt_local.filetype = "text"
-    vim.opt_local.swapfile = false
+
+local function create_window(bufn, opts)
+
+    return vim.api.nvim_open_win(bufn, true, opts)
 end
 
 
---- Creates a buffer
----@param name string
----@param vertical_split boolean
----
-local function create(name, vertical_split, singleton)
-    local n = name:gsub(" ", "_")
 
-    if(vertical_split) then
-        vim.cmd(":vnew")
-        vim.cmd(":wincmd L")
-    else
-        vim.cmd(":new")
-    end
+local function create_buffer(name, singleton)
+    local _bufn = vim.api.nvim_create_buf(true, false)
+    local _name = name:gsub(" ", "_")
 
     if(singleton) then
-        vim.cmd(":file " .. n)
+        vim.api.nvim_buf_set_name(_bufn, _name)
     else
-        vim.cmd(":file " .. find_buf_name(n .. "_", 1))
+        vim.api.nvim_buf_set_name(_bufn, find_buf_name(_name, 1))
     end
 
-    apply_buffer_settings()
-    return vim.api.nvim_get_current_buf()
+    apply_basic_buf_settings(_bufn)
 
+    return _bufn
 end
 
 
---- Displays each command string in a buffer
+local function create_and_open(opts)
+    local bufn = create_buffer(opts.name, opts.singleton)
+    write(bufn, opts.payload)
+    create_window(bufn, opts.window)
+    return bufn
+end
+
+
 ---@param cmds string[]
 ---
 function M.show_commands(cmds)
-    local bufn = create("curl commands", true, false)
-    write(bufn, utils.remove_line_endings(cmds))
+    create_and_open({
+        name = "curl commands",
+        singleton = false,
+        payload = utils.remove_line_endings(cmds),
+        window = { split = "right" }
+    })
 end
 
 
@@ -111,16 +141,24 @@ function M.show(responses)
 
     for _,r in pairs(responses) do
 
-        local vertical_split = (i == 0)
-
         if(r.error) then
-            local bufn = create(r.name .. "_error", vertical_split, false)
-            write(bufn, r.error)
+            create_and_open({
+                name = r.name .. "_error",
+                singleton = false,
+                payload = r.error,
+                window = { split = "right" }
+            })
         else
 
-            local bufn = create(r.name, vertical_split, false)
+            local bufn = create_and_open({
+                name = r.name,
+                singleton = false,
+                payload = r.data.payload,
+                window = { split = "right" }
+            })
 
             write(bufn, r.data.payload)
+
             if(r.after) then
                 r.after(r.data)
             end
@@ -151,8 +189,6 @@ function M.show(responses)
 end
 
 --- 
---- 
---- 
 function M.show_history(history)
 
     if(next(history) == nil) then
@@ -160,8 +196,18 @@ function M.show_history(history)
         return
     end
 
-    local name = "anrcy_history"
     local payload = {}
+
+    local float = calc_float_window()
+
+    local window_opts = {
+        relative = 'editor',
+        row = float.y,
+        col = float.x,
+        width = float.w,
+        height = float.h,
+        border = "single",
+    }
 
     for _,v in ipairs(history) do
         local str = ""
@@ -171,22 +217,31 @@ function M.show_history(history)
         table.insert(payload, str);
     end
 
-    if(vim.fn.bufexists(name) == 0) then
-        local bufn = create(name, false, true)
-        write(bufn, payload)
+    local bufn = -1
+
+    if(vim.fn.bufexists(history_buf_name) == 0) then
+        bufn = create_and_open({
+            name = history_buf_name,
+            singleton = true,
+            payload = payload,
+            window = window_opts
+        })
     else
-        local bufn = vim.fn.bufnr(name)
-
-        if(not vim.api.nvim_buf_is_loaded(bufn) or #vim.fn.win_findbuf(bufn) == 0) then
-            vim.cmd(":new")
-            vim.cmd(":b " .. bufn)
-            apply_buffer_settings()
-        end
-
+        bufn = vim.fn.bufnr(history_buf_name)
         write(bufn, payload)
+        if(not vim.api.nvim_buf_is_loaded(bufn) or #vim.fn.win_findbuf(bufn) == 0) then
+            create_window(bufn, window_opts)
+        end
     end
 
-    vim.cmd(":norm gg")
+    vim.api.nvim_set_option_value("modifiable", false, { buf = bufn })
+    return bufn
+end
+
+
+function M.close_history()
+    local bufn = vim.fn.bufnr(history_buf_name)
+    vim.api.nvim_buf_delete(bufn, { force = true })
 end
 
 
