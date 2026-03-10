@@ -12,9 +12,10 @@ local history_buf_name = "anrcy_history"
 ---
 local function format_test_results(results)
     local content = {}
-    for _,v in pairs(results) do
+    for i,v in ipairs(results) do
         local result = (v.result) and "pass" or "fail"
-        table.insert(content, "[" .. result .. "] " .. v.name)
+        local name = (v.name and v.name ~= "") and v.name or ("Test ".. i)
+        table.insert(content, "[" .. result .. "] " .. name)
     end
     return content
 end
@@ -212,27 +213,23 @@ function M.show_history(history)
     for _,v in ipairs(history) do
         local str = ""
         for _,j in ipairs(v) do
-            str = str .. j.name .. " "
+            str = str .. "(" .. j.name .. ")" .. " "
         end
         table.insert(payload, str);
     end
 
     local bufn = -1
 
-    if(vim.fn.bufexists(history_buf_name) == 0) then
-        bufn = create_and_open({
-            name = history_buf_name,
-            singleton = true,
-            payload = payload,
-            window = window_opts
-        })
-    else
-        bufn = vim.fn.bufnr(history_buf_name)
-        write(bufn, payload)
-        if(not vim.api.nvim_buf_is_loaded(bufn) or #vim.fn.win_findbuf(bufn) == 0) then
-            create_window(bufn, window_opts)
-        end
+    if(vim.fn.bufexists(history_buf_name) > 0) then
+        M.close_history()
     end
+
+    bufn = create_and_open({
+        name = history_buf_name,
+        singleton = true,
+        payload = payload,
+        window = window_opts
+    })
 
     vim.api.nvim_set_option_value("modifiable", false, { buf = bufn })
     return bufn
