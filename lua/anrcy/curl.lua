@@ -26,8 +26,8 @@ local request_types = {
 
 local function insert_with_prefix(cmd_table, data, prefix)
     if(type(data) == "string") then
-        table.insert(cmd_table, prefix)
-        table.insert(cmd_table, data)
+        cmd_table[#cmd_table + 1] = prefix
+        cmd_table[#cmd_table + 1] = data
     end
 
     -- todo: we should probably handle a non string
@@ -44,17 +44,17 @@ function M.build(request)
     local curl_command = {}
     local request_type = string.lower(request.type)
 
-    table.insert(curl_command, "curl")
-    table.insert(curl_command, "-s")
+    curl_command[#curl_command + 1] = "curl"
+    curl_command[#curl_command + 1] = "-s"
 
     if(request.additional_args) then
         for _,v in ipairs(request.additional_args) do
-            table.insert(curl_command, v)
+            curl_command[#curl_command + 1] = v
         end
     end
 
     for _,v in ipairs(request_types[request_type]) do
-        table.insert(curl_command, v)
+        curl_command[#curl_command + 1] = v
     end
 
     if(request.headers ~= nil) then
@@ -104,7 +104,7 @@ function M.build(request)
 
     end
 
-    table.insert(curl_command, request.url)
+    curl_command[#curl_command + 1] = request.url
 
     return curl_command
 end

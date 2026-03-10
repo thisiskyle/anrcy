@@ -99,12 +99,12 @@ function M.sync(jobs)
             break
         end
 
-        table.insert(responses, {
+        responses[#responses + 1] = {
             name = j.name or "anrcy",
             data = { vim.fn.system(cmd) },
             after = j.after or nil,
             test = j.test or nil
-        })
+        }
 
     end
 
@@ -206,11 +206,11 @@ function M.show_commands(jobs)
         }
 
         if(j.command) then
-            table.insert(lines, j.command)
+            lines[#lines + 1] = j.command
         else
             local cmd = curl.build(request)
             local cmdStr = require("anrcy.utils").get_curl_string(cmd)
-            table.insert(lines, cmdStr)
+            lines[#lines + 1] = cmdStr
         end
     end
 

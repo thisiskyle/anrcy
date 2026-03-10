@@ -69,7 +69,7 @@ The response data, test results, and anything else returned from the request wil
 they should be separated by a comma.<i>
 
 Since you run Anrcy by visually selecting a block, your request table can be stored as text anywhere.
-Here is an example of a request stored in a comment above a function call for quick testing.
+Here is an example of a request stored in a comment above a function call for easy testing.
 
 <br>
 
@@ -188,7 +188,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         lua = {},
 
         --- (optional) in the curl command, add '--data' prefix before the string 
-        ---@type string
+        ---@type string[]
         standard = {},
 
         --- (optional) in the curl command, add '--data-binary' prefix before the string 
@@ -214,7 +214,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
 <br>
 <br>
 
-## Examples
+## Job Examples
 
 ```lua
 -- generated curl: 
@@ -225,6 +225,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     type = "GET", 
     url = "https://pokeapi.co/api/v2/pokemon/pikachu", 
 }, -- this comma is important for selecting multiple jobs
+
 ```
 
 <br>
@@ -246,40 +247,37 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         "-i"
     },
     after = function(data) 
-        -- example for using jq to format the json response
+        -- use jq to format the json response
         vim.cmd(":%!jq")
     end,
+
     test = function(data) 
+
         -- import anrcy.assert for some test helper functions
         local assert = require("anrcy.assert")
 
+        local name_is_ditto = assert.data_contains(data, 'name.*ditto') 
+
         return {
             {
-                -- assumes response data is json, follows a path and checks the key's value
+                -- assumes response data will be json, follows a path and checks the key's value
                 name = "",
                 result = assert.json_path_equals(data, { "abilities", 1, "ability", "name" }, "limber")
             },
             {
-                -- assumes response data is json, follows a path and checks if a key exists
+                -- assumes response data will be json, follows a path and checks if a key exists
                 name = "has a name key",
                 result = assert.json_path_exists(data, { "abilities", 1, "ability", "name" })
             },
             { 
                 -- searches the data for a pattern
                 name = "name is ditto",
-                result = assert.data_contains(data, 'name.*ditto') 
-            },
-            { 
-                -- you can use your own function if assert does not fit your needs
-                name = "always true",
-                result = (function()
-                    -- test here....
-                    return true
-                end)()
+                result = name_is_ditto
             }
         }
     end
 }, --- this comma is important when selecting multiple jobs
+
 ```
 
 <br>
@@ -304,6 +302,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         }, 
     },
 }, --- this comma is important when selecting multiple jobs
+
 ```
 
 <br>
@@ -332,6 +331,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         }
     },
 }, --- this comma is important when selecting multiple jobs
+
 ```
 
 <br>
@@ -356,6 +356,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         }
     },
 }, --- this comma is important when selecting multiple jobs
+
 ```
 
 <br>
@@ -380,7 +381,42 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         }
     },
 }, --- this comma is important when selecting multiple jobs
+
 ```
 
 <br>
 <br>
+
+
+## Testing Response Data
+
+Anrcy supports testing the request response using the ```anrcy.Job.Test``` function. This function is expected to return an array
+of ```arncy.TestResult``` tables. 
+
+A few helper functions for parsing through the response is provided with ```require("anrcy.assert")```
+
+Example Test Function:
+
+```lua
+test = function(data) 
+
+    local assert = require("anrcy.assert")
+
+    local can_use_limber = assert.json_path_equals(data, { "abilities", 1, "ability", "name" }, "limber")
+
+    return {
+
+        { 
+            name = "pokemon is named ditto",
+            result = assert.data_contains(data, 'name.*ditto')
+        },
+
+        {
+            name = "is pokemon able to use limber?",
+            result = can_use_limber
+        },
+
+    }
+
+end
+```

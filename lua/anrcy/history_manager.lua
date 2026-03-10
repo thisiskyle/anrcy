@@ -53,7 +53,7 @@ end
 
 
 function M.archive(jobs)
-    table.insert(history, 1, jobs)
+    history[#history + 1] = jobs
 end
 
 

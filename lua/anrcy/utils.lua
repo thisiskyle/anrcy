@@ -84,7 +84,7 @@ function M.remove_line_endings(data)
     local output = {}
     for _,v in ipairs(data) do
         local s = v:gsub('\r\n?', ''):gsub('\n', '')
-        table.insert(output, s)
+        output[#output + 1] = s
     end
     return output
 end
@@ -116,11 +116,11 @@ function M.parse_output(data)
     end
 
     for i = 1, split_idx - 1, 1 do
-        table.insert(split_data.curl_header, data[i])
+        split_data.curl_header[#split_data.curl_header + 1] = data[i]
     end
 
     for i = split_idx, #data, 1 do
-        table.insert(split_data.payload, data[i])
+        split_data.payload[#split_data.payload + 1] = data[i]
     end
 
     return split_data
