@@ -14,7 +14,7 @@ local function setup_keymaps(bufn)
         '<cr>',
         function()
             local lineNum = vim.api.nvim_win_get_cursor(0)[1]
-            require("anrcy").run_jobs(M.get(lineNum))
+            require("anrcy").process_jobs(M.get(lineNum))
             require("anrcy.ui").close_history()
         end,
         {
@@ -43,7 +43,7 @@ end
 
 
 function M.get_last()
-    return history[#history]
+    return history[1]
 end
 
 
@@ -53,7 +53,7 @@ end
 
 
 function M.archive(jobs)
-    history[#history + 1] = jobs
+    table.insert(history, 1, jobs)
 end
 
 

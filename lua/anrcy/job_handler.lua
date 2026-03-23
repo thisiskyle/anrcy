@@ -218,8 +218,6 @@ function M.show_commands(jobs)
 end
 
 
-
-
 M.clear_jobs = clear_jobs
 
 

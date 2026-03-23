@@ -39,6 +39,12 @@ Lazy:
 }
 ```
 
+vim.pack:
+
+```lua
+vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
+require("anrcy").setup({})
+```
 
 <br>
 <br>
@@ -47,7 +53,7 @@ Lazy:
 ## Configuration
 
 ```lua
-opts = {
+{
     -- (optional) this function will be run after the response data is added to the new buffer useful for formatting the response
     -- NOTE: this will be overidden by anrcy.Job.after if one is set
     --@type fun()?
@@ -97,7 +103,7 @@ Just visually select the lua portion of the comment and run ```:Anrcy``` to see 
 ### Anrcy API
 
 
-Anrcy also exposes its ```run_jobs``` function allowing you to make calls from lua code directly.
+Anrcy also exposes its ```anrcy.process_jobs``` function allowing you to make calls from lua code directly.
 
 For example, you can make a keymap that makes a specific request like this:
 
@@ -105,8 +111,8 @@ For example, you can make a keymap that makes a specific request like this:
 vim.keymap.set(
     { 'n' },
     '<leader>d',
-    function ()
-        require("anrcy").run_jobs({
+    function()
+        require("anrcy").process_jobs({
             {
                 name = "ditto",
                 type = "GET",
@@ -118,6 +124,35 @@ vim.keymap.set(
 )
 ```
 
+
+
+You can also call the ```anrcy.job_handler``` directly and bypass displaying the response so you can handle the data 
+yourself.
+
+```lua
+require("anrcy.job_handler").async(
+    {
+        {
+            name = "ditto",
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/ditto",
+        }
+    },
+    function(responses)
+        -- work with responses here
+    end
+)
+
+-- or
+
+local responses = require("anrcy.job_handler").sync({
+    {
+        name = "ditto",
+        type = "GET",
+        url = "https://pokeapi.co/api/v2/pokemon/ditto",
+    }
+})
+```
 
 
 

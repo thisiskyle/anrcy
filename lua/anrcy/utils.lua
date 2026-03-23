@@ -4,17 +4,24 @@ local M = {}
 function M.insert_template()
     local template = [[{
     name = "",
+    -- GET | POST | PUT | DELETE
     type = "",
     url = "",
     headers = { },
     additional_args = { },
     show_cmd = false,
     data = {
+        -- only use one of these data types
         standard = {},
+        urlencode = {},
+        raw = {},
+        lua = {},
+        binary = {},
+        form = {},
     },
     after = function() end,
     test = function() end,
-}
+},
 ]]
 
     vim.fn.setreg('0', template)

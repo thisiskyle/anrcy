@@ -17,7 +17,7 @@ end
 --- Entry point function for running jobs from a provided list
 ---@param jobs? anrcy.Job[]
 ---
-function M.run_jobs(jobs)
+function M.process_jobs(jobs)
     if(jobs == nil) then
         ui.notify("Job list is empty", vim.log.levels.ERROR)
         return

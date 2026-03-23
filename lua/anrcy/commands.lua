@@ -2,7 +2,7 @@ vim.api.nvim_create_user_command(
     'Anrcy',
     function()
         local jobs = require("anrcy.utils").get_visual_selection_as_lua()
-        require("anrcy").run_jobs(jobs)
+        require("anrcy").process_jobs(jobs)
     end,
     { range = true }
 )
@@ -19,7 +19,7 @@ vim.api.nvim_create_user_command(
     'AnrcyRepeat',
     function()
         local jobs = require("anrcy.history_manager").get_last()
-        require("anrcy").run_jobs(jobs)
+        require("anrcy").process_jobs(jobs)
     end,
     {}
 )
@@ -37,7 +37,7 @@ vim.api.nvim_create_user_command(
     'AnrcyBookmarkRun',
     function()
         local jobs = require("anrcy.history_manager").get_bookmark()
-        require("anrcy").run_jobs(jobs)
+        require("anrcy").process_jobs(jobs)
     end,
     {}
 )
