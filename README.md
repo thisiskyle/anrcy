@@ -1,34 +1,47 @@
 # Anrcy - Another Neovim Rest Client... Yo
 
+<br>
+<br>
+
 ## About
 
 Another REST client plugin for Neovim
 
 Essentially just a plugin for turning lua tables into curl commands.
-Feature wise, Anrcy is pretty minimal and it is probably a bit clunky. Not all curl
-features and flags are properly implemented but it suits my needs.
-
-<br>
-
-## Why?
+Feature wise, Anrcy is minimal and it is probably a bit clunky. 
 
 This plugin was developed for personal use, not to fix a problem that
 hasn't been fixed already. There are plenty of other, more complete plugins out there. 
+
 For me, the other plugins were overkill and I felt that this would be a fun challenge.
 
 When creating this I had a few goals in mind: 
 
-- lua object structure that is easy to use in neovim
-- quickly and easily "sketch" out a request and run it anywhere
-- easily add tests that are run against the response
-- straight forward UI - display the response and test results in a single simple buffer
+- lua table structure that is easy to use in neovim
+- sketch out a request and run it anywhere
+- add tests that are run against the response
+- display the response and test results in a single buffer
 
+<i>NOTE: Not all curl features and flags are accounted for.</i>
 
 <br>
 <br>
 
+---
 
-## Installation
+[Installation](#installation)  
+[Configuration](#configuration)  
+[Usage](#usage)  
+[Commands](#commands)  
+[Examples](#examples)  
+[Testing Response Data](#tests)  
+
+---
+
+<br>
+<br>
+
+## Installation <a id="installation"></a>
 
 Lazy:
 
@@ -50,7 +63,7 @@ require("anrcy").setup({})
 <br>
 
 
-## Configuration
+## Configuration <a id="configuration"></a>
 
 ```lua
 {
@@ -66,15 +79,14 @@ require("anrcy").setup({})
 <br>
 
 
-## Usage
+## Usage <a id="usage"></a>
 
-Anrcy uses lua tables to build curl commands. You use neovim to visually select the table(s) and run `:Anrcy` 
+Anrcy uses lua tables to build curl commands. You use neovim to visually highlight the table(s) and run `:'<,'>Anrcy` 
 The response data, test results, and anything else returned from the request will be displayed in its own buffer. One request, one buffer.
 
-<i>NOTE: Selected text is wrapped in an array internally. So to run multiple jobs
-they should be separated by a comma.<i>
+<i>NOTE: Selected text is wrapped in an array internally. So to run multiple jobs they should be separated by a comma.</i>
 
-Since you run Anrcy by visually selecting a block, your request table can be stored as text anywhere.
+Since you run Anrcy by visually highlighting a block, your request table can be stored as text anywhere.
 Here is an example of a request stored in a comment above a function call for easy testing.
 
 <br>
@@ -97,13 +109,12 @@ ditto: async () => {
 
 <br>
 
-Just visually select the lua portion of the comment and run ```:Anrcy``` to see the results.
+Visually highlight the lua portion of the comment and run ```:'<,'>Anrcy``` to see the results.
 
 
 ### Anrcy API
 
-
-Anrcy also exposes its ```anrcy.process_jobs``` function allowing you to make calls from lua code directly.
+Anrcy also exposes some helpful functions for use directly in lua code. 
 
 For example, you can make a keymap that makes a specific request like this:
 
@@ -124,10 +135,9 @@ vim.keymap.set(
 )
 ```
 
-
-
 You can also call the ```anrcy.job_handler``` directly and bypass displaying the response so you can handle the data 
 yourself.
+
 
 ```lua
 require("anrcy.job_handler").async(
@@ -139,12 +149,13 @@ require("anrcy.job_handler").async(
         }
     },
     function(responses)
-        -- work with anrcy.Response[] here
+        -- do work here...
     end
 )
+```
 
--- or
-
+```lua
+---@type anrcy.Response[]
 local responses = require("anrcy.job_handler").sync({
     {
         name = "ditto",
@@ -152,31 +163,34 @@ local responses = require("anrcy.job_handler").sync({
         url = "https://pokeapi.co/api/v2/pokemon/ditto",
     }
 })
+
+-- do work here...
+
 ```
 
 
-
-
 <br>
 <br>
 
-## Commands 
+## Commands <a id="commands"></a>
+
 
 |Command|Description|
 |-------|-----------|
-|Anrcy|Run the currently selected jobs|
-|AnrcyRepeat|Repeat the last job that was run|
-|AnrcyBookmark|Save the current visually selected jobs|
-|AnrcyBookmarkRun|Run the currently bookmarked jobs|
-|AnrcyShowCurl|Display the curl commands created by the current visually selected jobs (does not run anything)|
-|AnrcyTemplate|Insert a job template at the cursor location|
-|AnrcyClear|Clear any currently running and cached jobs|
-|AnrcyHistory|View job history. Hit enter to run the job at cursor location|
+|:'<,'>Anrcy|Run the highlighted jobs|
+|:'<,'>AnrcyBookmark|Bookmark the highlighted jobs|
+|:'<,'>AnrcyShowCurl|Display the curl commands created by the highlighted jobs (does not run curl command)|
+|:AnrcyBookmarkRun|Run the currently bookmarked jobs|
+|:AnrcyRepeat|Repeat the last job that was run|
+|:AnrcyTemplate|Insert a job template at the cursor location|
+|:AnrcyClear|Clear any running or cached jobs|
+|:AnrcyHistory|View job history. Hit enter to run the job at cursor location|
 
 <br>
 <br>
 
-## Job Template
+## anrcy.Job Template <a id="job-template"></a>
+
 
 Most of the fields for the job template are optional, ```type``` and ```url``` are all that is required.
 
@@ -253,7 +267,8 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
 <br>
 <br>
 
-## Job Examples
+## anrcy.Job Examples <a id="examples"></a>
+
 
 ```lua
 -- generated curl: 
@@ -263,7 +278,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     name = "pikachu", 
     type = "GET", 
     url = "https://pokeapi.co/api/v2/pokemon/pikachu", 
-}, -- this comma is important for selecting multiple jobs
+}, -- this comma is important when highlighting multiple jobs
 
 ```
 
@@ -315,7 +330,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
             }
         }
     end
-}, --- this comma is important when selecting multiple jobs
+}, --- this comma is important when highlighting multiple jobs
 
 ```
 
@@ -340,7 +355,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
             "param1=something" 
         }, 
     },
-}, --- this comma is important when selecting multiple jobs
+}, --- this comma is important when highlighting multiple jobs
 
 ```
 
@@ -369,7 +384,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
         ]]
         }
     },
-}, --- this comma is important when selecting multiple jobs
+}, --- this comma is important when highlighting multiple jobs
 
 ```
 
@@ -394,7 +409,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
             Description = "this will be converted to json",
         }
     },
-}, --- this comma is important when selecting multiple jobs
+}, --- this comma is important when highlighting multiple jobs
 
 ```
 
@@ -419,7 +434,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
             "age=30"
         }
     },
-}, --- this comma is important when selecting multiple jobs
+}, --- this comma is important when highlighting multiple jobs
 
 ```
 
@@ -427,7 +442,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
 <br>
 
 
-## Testing Response Data
+## Testing Response Data <a id="tests"></a>
 
 Anrcy supports testing the request response using the ```anrcy.Job.Test``` function. This function is expected to return an array
 of ```arncy.TestResult``` tables. 

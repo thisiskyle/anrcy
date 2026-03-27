@@ -1,13 +1,12 @@
-*anrcy.txt*                                   Another Neovim REST client... yo
+*anrcy.txt*                                   Another Neovim REST Client... yo
 
 ==============================================================================
 INTRODUCTION                                                      *anrcy*
 
-Anrcy is another REST client plugin for Neovim.
+Anrcy is a REST client for Neovim.
 
-It is primarily a plugin for turning Lua tables into curl commands
-and executing them. Feature-wise, Anrcy is intentionally minimal and
-may feel a bit clunky. 
+It is primarily a plugin for turning lua tables into curl commands
+and executing them. 
 
 Not all curl flags and features are accounted for.
 
@@ -28,7 +27,6 @@ TABLE OF CONTENTS                                             *anrcy-toc*
   Job Template                     |anrcy-job-template| 
   Job Examples                     |anrcy-job-examples| 
   Testing Responses                |anrcy-testing|      
-  About                            |anrcy-about|        
 
 ==============================================================================
 INSTALLATION                                                      *anrcy-install*
@@ -52,11 +50,15 @@ vim.pack:
 ==============================================================================
 CONFIGURATION                                                     *anrcy-config*
 
+Pass this into the setup function to configure Anrcy.
 >lua
+    ---@type anrcy.Config    
     {
-        -- Optional function run after response data is placed into a buffer
-        -- NOTE: This is overridden by anrcy.Job.after if set.
-        global_after = function() end,
+        -- (optional) global version of anrcy.Job.after and will run for
+        -- all jobs
+        -- NOTE: anrcy.Job.after takes priority if set
+        global_after = function() 
+        end,
     }
 <
 
@@ -66,8 +68,8 @@ USAGE                                                            *anrcy-usage*
 Anrcy uses Lua tables to build curl commands.
 
 To run a request:
-    1. Visually select one or more Lua table jobs
-    2. Execute |:Anrcy|
+    1. Visually highlight one or more Lua table jobs
+    2. Execute |:'<,'>Anrcy|
 
 The response data and test results are displayed in a new buffer.
 
@@ -104,7 +106,7 @@ You can also access the |anrcy.job_handler| directly to bypass creating a respon
           }
       },
       function(responses)
-          -- responses is an array of anrcy.Response
+          -- responses is an anrcy.Response[]
           -- do work here...
       end
     )
@@ -127,29 +129,30 @@ You can also access the |anrcy.job_handler| directly to bypass creating a respon
 ==============================================================================
 COMMANDS                                                        *anrcy-commands*
 
-:Anrcy
-    Run the currently visually selected jobs.
+:'<,'>Anrcy
+    Run the currently highlighted jobs
 
 :AnrcyRepeat
-    Repeat the last job that was run.
+    Repeat the last run
 
-:AnrcyBookmark
-    Save the currently selected jobs.
+:'<,'>AnrcyBookmark
+    Save the currently highlighted jobs
 
 :AnrcyBookmarkRun
-    Run the currently bookmarked jobs.
+    Run the currently bookmarked jobs
 
-:AnrcyShowCurl
-    Display generated curl commands without executing them.
+:'<,'>AnrcyShowCurl
+    Display generated curl commands of the highlighted jobs 
+    without executing them
 
 :AnrcyTemplate
-    Insert a job template at the cursor.
+    Insert a job template at the cursor
 
 :AnrcyClear
-    Clear currently running and cached jobs.
+    Clear currently running and cached jobs
 
 :AnrcyHistory
-    View job history. Press <CR> to run the job under the cursor.
+    View job history (press <CR> to run the job under the cursor)
 
 ==============================================================================
 JOB TEMPLATE                                                *anrcy-job-template*
@@ -307,9 +310,5 @@ Example test function:
         }
     end
 <
-
-==============================================================================
-ABOUT                                                         *anrcy-about*
-
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:
