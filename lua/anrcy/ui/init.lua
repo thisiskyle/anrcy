@@ -134,19 +134,20 @@ end
 
 
 --- Displays each Response in a new buffer
---- and runs the after() function if there is one
 ---@param responses anrcy.Response[]
 ---
 function M.show(responses)
     for _,r in pairs(responses) do
 
         if(r.error) then
+
             create_and_open({
                 name = r.name .. "_error",
                 singleton = false,
                 payload = r.error,
                 window = { split = "right" }
             })
+
         else
 
             local bufn = create_and_open({
@@ -157,10 +158,6 @@ function M.show(responses)
             })
 
             write(bufn, r.data.payload)
-
-            if(r.after) then
-                r.after(r.data)
-            end
 
             local next = next
 

@@ -67,10 +67,11 @@ require("anrcy").setup({})
 
 ```lua
 {
-    -- (optional) this function will be run after the response data is added to the new buffer useful for formatting the response
+    -- (optional) this function will be run after the request is made
+    -- and it can do whatever you would like it to to the data
     -- NOTE: this will be overidden by anrcy.Job.after if one is set
-    --@type fun()?
-    global_after = function() end,
+    ---@type fun(string[]): string[]
+    global_after = nil,
 },
 ```
 
@@ -255,11 +256,11 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     additional_args = {},
 
     --- (optional) runs after the response is loaded into the buffer, used for formatting
-    ---@type fun(data: anrcy.ResponseData)
+    ---@type fun(string[]): string[]
     after = nil,
 
     --- (optional) runs last, runs tests against the reponse data
-    ---@type fun(data: anrcy.ResponseData): anrcy.TestResult[]
+    ---@type fun(string[]): anrcy.TestResult[]
     test = nil,
 },
 ```
@@ -300,9 +301,11 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     additional_args = {  
         "-i"
     },
-    after = function(data) 
+    after = function(payload) 
         -- use jq to format the json response
-        vim.cmd(":%!jq")
+        -- requires jq to be installed on your system
+        local out = vim.fn.system({ "jq", "." }, table.concat(payload))
+        return vim.split(out, "\n", { plain = true })
     end,
 
     test = function(data) 

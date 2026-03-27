@@ -54,11 +54,12 @@ Pass this into the setup function to configure Anrcy.
 >lua
     ---@type anrcy.Config    
     {
-        -- (optional) global version of anrcy.Job.after and will run for
+        -- (optional) global version of anrcy.Job.after and will run for 
         -- all jobs
         -- NOTE: anrcy.Job.after takes priority if set
-        global_after = function() 
-        end,
+        --
+        ---@type fun(string[]): string[]
+        global_after = nil,
     }
 <
 
@@ -225,17 +226,21 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         additional_args = {},
 
         --- (optional) runs after the response is loaded into the buffer, used for formatting
-        ---@type fun(data: anrcy.ResponseData)
+        ---@type fun(string[]): string[]
         after = nil,
 
         --- (optional) runs last, runs tests against the reponse data
-        ---@type fun(data: anrcy.ResponseData): anrcy.TestResult[]
+        ---@type fun(string[]): anrcy.TestResult[]
         test = nil,
     },
 <
 
 ==============================================================================
 JOB EXAMPLES                                                *anrcy-job-examples*
+
+Some basic examples of what a job would look like. 
+You can highlight run these right from this helpdoc.
+
 
 Simple GET:
 
@@ -260,16 +265,19 @@ Complex GET with tests and formatting:
         additional_args = { 
             "-i" 
         },
-        after = function(data)
-            vim.cmd(":%!jq")
+        ---@param payload string[]
+        ---@return string[]
+        after = function(payload)
+            local out = vim.fn.system({ "jq", "." }, table.concat(payload))
+            return vim.split(out, "\n", { plain = true })
         end,
-        test = function(data)
+        ---@param payload string[]
+        ---@return TestResult[]
+        test = function(payload)
             local assert = require("anrcy.assert")
-
             local dataPath = { "abilities", 1, "ability", "name" }
             local expectedValue = "limber"
             local limberResult = assert.json_path_equals(data, dataPath, expectedValue)
-
             return {
                 { name = "has limber ability", result = limberResult },
             }

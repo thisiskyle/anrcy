@@ -135,8 +135,8 @@ function M.sync(jobs)
         local norm = utils.remove_line_endings(data)
         response.data = utils.parse_output(norm)
 
-        if(j.test) then
-            response.test_results = j.test(response.data.payload)
+        if(response.test) then
+            response.test_results = response.test(response.data.payload)
         end
 
         responses[#responses + 1] = response
@@ -202,8 +202,12 @@ function M.async(jobs, on_complete)
                     local norm = utils.remove_line_endings(response.stdout)
                     response.data = utils.parse_output(norm)
 
-                    if(j.test) then
-                        response.test_results = j.test(response.data.payload)
+                    if(response.test) then
+                        response.test_results = response.test(response.data.payload)
+                    end
+
+                    if(response.after) then
+                        response.data.payload = response.after(response.data.payload)
                     end
 
                     completed_jobs[id] = true
