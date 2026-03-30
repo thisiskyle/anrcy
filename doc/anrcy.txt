@@ -275,9 +275,9 @@ Complex GET with tests and formatting:
         ---@return TestResult[]
         test = function(payload)
             local assert = require("anrcy.assert")
-            local dataPath = { "abilities", 1, "ability", "name" }
-            local expectedValue = "limber"
-            local limberResult = assert.json_path_equals(data, dataPath, expectedValue)
+            local path = { "abilities", 1, "ability", "name" }
+            local value = "limber"
+            local limberResult = assert.json_path_equals(payload, path, value)
             return {
                 { name = "has limber ability", result = limberResult },
             }
