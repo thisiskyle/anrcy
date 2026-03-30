@@ -19,7 +19,6 @@
 ---@field stdout? string[]
 ---@field stderr? string[]
 ---@field data? anrcy.ResponseData
----@field after? fun(data?: string[])
 ---@field test_results? table
 ---@field curl_cmd? string[]
 ---@field show_curl? boolean
@@ -127,7 +126,6 @@ function M.sync(jobs)
             curl_cmd = cmd,
             data = nil,
             error = nil,
-            after = j.after or nil,
             test_results = nil
         }
 
@@ -135,8 +133,8 @@ function M.sync(jobs)
         local norm = utils.remove_line_endings(data)
         response.data = utils.parse_output(norm)
 
-        if(response.test) then
-            response.test_results = response.test(response.data.payload)
+        if(j.test) then
+            response.test_results = j.test(response.data.payload)
         end
 
         responses[#responses + 1] = response
@@ -170,7 +168,6 @@ function M.async(jobs, on_complete)
             stdout = {},
             stderr = {},
             data = nil,
-            after = j.after or config.options.global_after or nil,
             test_results = nil
         }
 
@@ -202,12 +199,22 @@ function M.async(jobs, on_complete)
                     local norm = utils.remove_line_endings(response.stdout)
                     response.data = utils.parse_output(norm)
 
-                    if(response.test) then
-                        response.test_results = response.test(response.data.payload)
+                    -- run test
+                    if(j.test) then
+                        response.test_results = j.test(response.data.payload)
                     end
 
-                    if(response.after) then
-                        response.data.payload = response.after(response.data.payload)
+
+                    local modifiedPayload = nil
+
+                    if(j.after) then
+                        modifiedPayload = j.after(response.data.payload)
+                    elseif(config.options.global_after) then
+                        modifiedPayload = config.options.global_after(response.data.payload)
+                    end
+
+                    if(modifiedPayload) then
+                        response.data.payload = modifiedPayload
                     end
 
                     completed_jobs[id] = true
