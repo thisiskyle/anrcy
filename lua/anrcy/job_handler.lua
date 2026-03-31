@@ -71,7 +71,7 @@ local function monitor_progress()
         done = done + 1
     end
 
-    ui.show_progress(run + done, done, config.options.animation)
+    ui.show_progress(run + done, done)
 
     if(run == 0) then
         clear_jobs()
@@ -199,20 +199,20 @@ function M.async(jobs, on_complete)
                     local norm = utils.remove_line_endings(response.stdout)
                     response.data = utils.parse_output(norm)
 
-                    -- run test
                     if(j.test) then
                         response.test_results = j.test(response.data.payload)
                     end
-
 
                     local modifiedPayload = nil
 
                     if(j.after) then
                         modifiedPayload = j.after(response.data.payload)
-                    elseif(config.options.global_after) then
-                        modifiedPayload = config.options.global_after(response.data.payload)
+                    elseif(config.global_after) then
+                        modifiedPayload = config.global_after(response.data.payload)
                     end
 
+                    -- only overwrite the original payload if the modified payload is not nil
+                    -- otherwise, just keep the original payload
                     if(modifiedPayload) then
                         response.data.payload = modifiedPayload
                     end

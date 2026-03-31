@@ -66,13 +66,37 @@ require("anrcy").setup({})
 ## Configuration <a id="configuration"></a>
 
 ```lua
-{
-    -- (optional) this function will be run after the request is made
-    -- and it can do whatever you would like it to to the data
-    -- NOTE: this will be overidden by anrcy.Job.after if one is set
-    ---@type fun(string[]): string[]
-    global_after = nil,
-},
+    ---@type anrcy.Config    
+    {
+        -- (optional) global version of anrcy.Job.after and will run for 
+        -- all jobs
+        -- NOTE: anrcy.Job.after takes priority if set
+        --
+        ---@type fun(string[]): string[]
+        global_after = nil,
+
+        -- (optional) the progress notification animation
+        --
+        ---@type string
+        animation = "default",
+
+        -- (optional) custom animations
+        --
+        ---@type table<string, anrcy.Animation>
+        animations = {
+            default = {
+                delta_time_ms = 600,
+                frames = {
+                    "ᓚᘏᗢ zzz",
+                    "ᓚᘏᗢ Zzz",
+                    "ᓚᘏᗢ ZZz",
+                    "ᓚᘏᗢ ZZZ",
+                    "ᓚᘏᗢ zZZ",
+                    "ᓚᘏᗢ zzZ",
+                }
+            },
+        },
+    }
 ```
 
 

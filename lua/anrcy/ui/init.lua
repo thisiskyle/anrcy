@@ -1,4 +1,6 @@
 local utils = require("anrcy.utils")
+local config = require("anrcy.config")
+local animator = require("anrcy.ui.animator")
 
 
 local M = {}
@@ -20,6 +22,7 @@ local function format_test_results(results)
     return content
 end
 
+
 --- Calculate the values to center and size a floating window
 ---
 local function calc_float_window()
@@ -35,6 +38,7 @@ local function calc_float_window()
         y = ((editor.height - h) / 2)
     }
 end
+
 
 
 local function apply_basic_buf_settings(bufn)
@@ -247,10 +251,9 @@ end
 ---@param target number
 ---@param completed number
 ---
-function M.show_progress(target, completed, animation)
+function M.show_progress(target, completed)
 
-    local animator = require("anrcy.ui.animator")
-    local spinner = animator.get_frame(animator.animations[animation])
+    local spinner = animator.get_frame(config.animations[config.animation])
     local message =  completed .. "/" .. target .. "  " .. spinner
 
     if(completed == target) then
@@ -270,11 +273,9 @@ function M.animation_test(count)
         return
     end
 
-    ---@type anrcy.Animator
-    local animator = require("anrcy.ui.animator")
     local message = ""
 
-    for k,v in pairs(animator.animations) do
+    for k,v in pairs(config.animations) do
         message = message .. k .. ": " .. animator.get_frame(v) .. "\n"
     end
 
@@ -297,7 +298,7 @@ function M.progress_test(count)
     end
     local t = math.floor(500 / 100) - 1
     local c = math.floor((500 - count) / 100)
-    M.show_progress(t, c, "default")
+    M.show_progress(t, c)
     count = count - 1
     vim.defer_fn(function() M.progress_test(count) end, 50)
 end
