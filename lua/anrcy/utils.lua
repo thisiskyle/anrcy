@@ -192,4 +192,5 @@ function M.get_visual_selection_as_lua()
     return data
 end
 
+
 return M
