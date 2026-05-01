@@ -12,50 +12,65 @@ local M = {}
 local history_buf_name = "anrcy_history"
 
 
----@param opts anrcy.Display_Opts
+---@param opts anrcy.Buffer_Opts
+---@return number
 ---
-local function create_and_open(opts)
+local function create_buffer(opts)
     local bufn = buffer.create_buffer(opts.name, opts.singleton)
     buffer.write(bufn, opts.payload)
-    window.create_window(bufn, opts.window)
     return bufn
 end
 
+
+local function show_in_quickfix(bufs)
+    local list = {}
+    for _,v in ipairs(bufs) do
+        list[#list + 1] = {
+            bufnr = v,
+            lnum = 1,
+            col = 1,
+            title = "Anrcy Responses"
+        }
+    end
+    vim.fn.setqflist(list, "r")
+    vim.cmd("copen")
+    vim.cmd("cfirst")
+end
 
 
 ---@param cmds string[]
 ---
 function M.show_commands(cmds)
-    create_and_open({
+    local bufn = create_buffer({
         name = "curl commands",
         singleton = false,
         payload = utils.remove_line_endings(cmds),
-        window = { split = "right" }
     })
+    window.create_window(bufn, { split = "right" })
 end
 
 
 ---@param responses anrcy.Response[]
 ---
 function M.show_response(responses)
+    local buffers = {}
+
     for _,r in pairs(responses) do
 
         if(#r.stderr > 0) then
 
-            create_and_open({
+            buffers[#buffers + 1] = create_buffer({
                 name = r.name .. "_error",
                 singleton = false,
-                payload = r.stderr,
-                window = { split = "right" }
+                payload = r.stderr
             })
 
         else
 
-            local bufn = create_and_open({
+            local bufn = create_buffer({
                 name = r.name,
                 singleton = false,
-                payload = r.data.payload,
-                window = { split = "right" }
+                payload = r.data.payload
             })
 
             buffer.write(bufn, r.data.payload)
@@ -78,10 +93,13 @@ function M.show_response(responses)
                 buffer.insert_at_top(bufn, utils.format_test_results(r.test_results))
             end
 
-            vim.cmd(":norm gg")
+            buffers[#buffers + 1] = bufn
         end
 
     end
+
+    show_in_quickfix(buffers)
+
 end
 
 
@@ -91,7 +109,18 @@ function M.show_history(history)
 
     local float = window.calc_float_window()
 
-    local window_opts = {
+
+    if(vim.fn.bufexists(history_buf_name) > 0) then
+        M.close_history()
+    end
+
+    local bufn = create_buffer({
+        name = history_buf_name,
+        singleton = true,
+        payload = history,
+    })
+
+    window.create_window(bufn, {
         relative = 'editor',
         row = float.y,
         col = float.x,
@@ -100,17 +129,6 @@ function M.show_history(history)
         border = "single",
         title = "Anrcy History",
         title_pos = "center"
-    }
-
-    if(vim.fn.bufexists(history_buf_name) > 0) then
-        M.close_history()
-    end
-
-    local bufn = create_and_open({
-        name = history_buf_name,
-        singleton = true,
-        payload = history,
-        window = window_opts
     })
 
     vim.api.nvim_set_option_value("modifiable", false, { buf = bufn })

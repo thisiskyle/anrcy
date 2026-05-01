@@ -4,7 +4,7 @@
 ---@field frames string[]
 
 ---@class anrcy.Config_Opts
----@field global_after? fun(payload: string[]): string[]
+---@field global_after? fun(data: string[]): string[]
 ---@field animation? string
 ---@field animations? table<string, anrcy.Animation>
 
@@ -20,16 +20,17 @@
 
 
 ---@class anrcy.Job
----@field name string
+---@field name? string
+---@field source? string
 ---@field show_curl? boolean
 ---@field type string
 ---@field url string
----@field headers string[]
----@field data table[]
+---@field headers? string[]
+---@field data? table[]
 ---@field additional_args? string[]
 ---@field command? string[] | string
----@field after? fun(data?: string[])
----@field test? fun(data?: string[])
+---@field after? fun(data?: string[]): string[]
+---@field test? fun(data?: string[]): anrcy.Test_Result[]
 
 
 ---@class anrcy.Response
@@ -42,11 +43,11 @@
 ---@field show_curl? boolean
 
 
----@class anrcy.Display_Opts
+---@class anrcy.Buffer_Opts
 ---@field name string
 ---@field singleton boolean
 ---@field payload string[]
----@field window table vim.api.keyset.win_config
+
 
 
 ---@class anrcy.Test_Result 

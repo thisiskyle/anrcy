@@ -60,8 +60,34 @@ local function job_to_curl(j)
 end
 
 
+--- Check the jobs, remove invalid jobs, pull any sourced job and add the jobs
+--- to the list. Return resulting job list
+---@param jobs anrcy.Job[]
+---@return anrcy.Job[]
+---
+local function check_jobs(jobs)
+    local full_list = {}
+
+    for _,j in ipairs(jobs) do
+        if(j.source) then
+            local extra_jobs = dofile(j.source)
+            for _,x in ipairs(extra_jobs) do
+                full_list[#full_list + 1] = x
+            end
+        elseif(j ~= nil) then
+            full_list[#full_list + 1] = j
+        end
+    end
+
+    return full_list
+end
+
+
+
+
 ---@class anrcy.Job_Handler
 local M = {}
+
 
 --- Uses vim.fn.system and curl to make a syncronous http request
 --- I am not sure if I will ever actually use this
@@ -70,8 +96,9 @@ local M = {}
 ---
 function M.sync(jobs)
     local responses = {}
+    local valid_jobs = check_jobs(jobs)
 
-    for _,j in ipairs(jobs) do
+    for _,j in ipairs(valid_jobs) do
 
         ---@type string[] | string
         local cmd = job_to_curl(j)
@@ -111,8 +138,9 @@ end
 ---@param on_complete fun(data?: anrcy.Response[]) on_complete callback handler
 ---
 function M.async(jobs, on_complete)
+    local valid_jobs = check_jobs(jobs)
 
-    for _,j in ipairs(jobs) do
+    for _,j in ipairs(valid_jobs) do
 
         ---@type string[] | string
         local cmd = job_to_curl(j)

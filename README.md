@@ -8,12 +8,10 @@
 Another REST client plugin for Neovim
 
 Essentially just a plugin for turning lua tables into curl commands.
-Feature wise, Anrcy is minimal and it is probably a bit clunky. 
 
-This plugin was developed for personal use, not to fix a problem that
-hasn't been fixed already. There are plenty of other, more complete plugins out there. 
-
-For me, the other plugins were overkill and I felt that this would be a fun challenge.
+This plugin was developed for personal use, not to solve a problem that
+hasn't been solved already. There are plenty of other, more complete plugins out there. 
+For me, those other plugins were overkill and I felt that this would be a fun challenge.
 
 When creating this I had a few goals in mind: 
 
@@ -21,8 +19,6 @@ When creating this I had a few goals in mind:
 - sketch out a request and run it anywhere
 - add tests that are run against the response
 - display the response and test results in a single buffer
-
-<i>NOTE: Not all curl features and flags are accounted for.</i>
 
 <br>
 <br>
@@ -33,6 +29,7 @@ When creating this I had a few goals in mind:
 [Configuration](#configuration)  
 [Usage](#usage)  
 [Commands](#commands)  
+[Sourcing Job Files](#source)  
 [Examples](#examples)  
 [Testing Response Data](#tests)  
 
@@ -233,6 +230,7 @@ local responses = require("anrcy.job_handler").sync({
 <br>
 <br>
 
+
 ## anrcy.Job Template <a id="job-template"></a>
 
 
@@ -245,6 +243,10 @@ Most of the fields for the job template are optional, `type` and `url` are all t
     --- (optional) name of the job, will be used to name the response buffer
     ---@type string
     name = "", 
+
+    --- (optional) full path of a job file to source, more info below
+    ---@type string
+    source = "", 
 
     --- (required) request type  [ "GET", "POST", etc ]
     ---@type string
@@ -307,6 +309,50 @@ Most of the fields for the job template are optional, `type` and `url` are all t
     test = nil,
 },
 ```
+
+<br>
+<br>
+
+
+## Sourcing Job Files <a id="source"></a>
+
+If you want to do something more complex, you can create a "job file."
+A job file can be any valid lua file that returns an `anrcy.Job[]`
+
+Example:
+
+```lua
+-- job_file_example.lua
+
+--@type anrcy.Job[]
+local jobs = {}
+
+local pokemon = { "mew", "mewtwo" }
+
+for _,v in ipairs(pokemon) do
+    jobs[#jobs + 1] = {
+        name = v,
+        type = "GET",
+        url = "https://pokeapi.co/api/v2/pokemon/" .. v,
+    }
+end
+
+return jobs
+
+```
+
+```lua
+-- anrcy.Job to run the above file
+{
+    source = "/full/path/to/job_file_example.lua"
+}
+```
+
+Highlighting the job above and executing `:'<,'>Anrcy` will execute the 
+lua file at `source` and add any returned jobs to the queue.
+
+In the above example, two jobs will be added.
+
 
 <br>
 <br>

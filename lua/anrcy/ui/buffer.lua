@@ -10,7 +10,6 @@ function M.apply_basic_buf_settings(bufn)
     vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufn })
     vim.api.nvim_set_option_value("filetype", "text", { buf = bufn })
     vim.api.nvim_set_option_value("swapfile", false, { buf = bufn })
-    vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufn })
 end
 
 

@@ -75,7 +75,7 @@ function M.show()
         local str = ""
 
         for i,j in ipairs(v) do
-            str = str .. j.name
+            str = str .. (j.name or ("job" .. i))
 
             if(i ~= #v) then
                 str = str .. ", "
