@@ -180,5 +180,4 @@ function M.show_progress(target, completed)
 end
 
 
-
 return M

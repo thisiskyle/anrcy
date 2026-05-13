@@ -7,23 +7,30 @@
 
 Another REST client plugin for Neovim
 
-Essentially just a plugin for turning lua tables into curl commands.
-
-This plugin was developed for personal use, not to solve a problem that
-hasn't been solved already. There are plenty of other, more complete plugins out there. 
-For me, those other plugins were overkill and I felt that this would be a fun challenge.
+Essentially just a plugin for turning lua tables into curl commands. And while there
+are many plugins that solve this issue, I felt that many of those were simply overkill for
+my use case.
 
 When creating this I had a few goals in mind: 
 
-- lua table structure that is easy to use in neovim
-- sketch out a request and run it anywhere
-- add tests that are run against the response
-- display the response and test results in a single buffer
+- Easily sketch out a request and run it from anywhere.
+  Wether it is in a comment or a dedicated file, if you can highlight 
+  it, you can run it.
+
+- Write tests in lua for easy neovim compatibility without outside
+  dependencies.
+
+- Simple, familiar UI. 
+  Everything comes out in a single buffer for each response, easily naviagted
+  and manipulated with standard vim motions.
+
 
 <br>
 <br>
 
 ---
+
+<br>
 
 [Installation](#installation)  
 [Configuration](#configuration)  
@@ -32,6 +39,8 @@ When creating this I had a few goals in mind:
 [Sourcing Job Files](#source)  
 [Examples](#examples)  
 [Testing Response Data](#tests)  
+
+<br>
 
 ---
 
@@ -53,7 +62,6 @@ vim.pack:
 
 ```lua
 vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
-require("anrcy").setup({})
 ```
 
 <br>
@@ -106,7 +114,7 @@ require("anrcy").setup({})
 Anrcy uses lua tables to build curl commands. You use neovim to visually highlight the table(s) and run `:'<,'>Anrcy` 
 The response data, test results, and anything else returned from the request will be displayed in its own buffer. One request, one buffer.
 
-Internally, your highlighted text is wrapped in an array and inserted into a temp file that looks like this
+Internally, your highlighted text is wrapped in an array and inserted into a temp file that looks like the example below.
 This file is the executed using `dofile()` and the returned job array is used.  
 
 <br>
@@ -453,6 +461,7 @@ In the above example, two jobs will be added.
 <br>
 <br>
 
+
 ```lua
 -- generated curl: 
 -- curl -s -X POST --header "Content-Type: application/json" --data "{ \"Name\": \"lua multiline json string\", \"Description\": \"multiline strings work too\", } " http://localhost:8080
@@ -481,6 +490,7 @@ In the above example, two jobs will be added.
 
 <br>
 <br>
+
 
 ```lua
 -- generated curl: 
@@ -529,6 +539,9 @@ In the above example, two jobs will be added.
 
 ```
 
+<br>
+<br>
+
 ```lua
 -- if you want to get weird with it...
 -- this IIFE returns a job table and takes in a parameter
@@ -562,8 +575,7 @@ end)("charizard"),
 
 ## Testing Response Data <a id="tests"></a>
 
-Anrcy supports testing the request response using the `anrcy.Job.Test` function. This function is expected to return an array
-of `arncy.Test_Result` tables. 
+Anrcy supports testing the request response using the `anrcy.Job.Test` function. This function is expected to return a `arncy.Test_Result[]`
 
 A few helper functions for parsing through the response is provided with `require("anrcy.assert")`
 
